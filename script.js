@@ -165,11 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!track || !prevBtn || !nextBtn) return;
 
         let scrollAmount = 0;
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchStartScrollLeft = 0;
-        let touchDirection = null;
-        const touchLockThreshold = 10;
 
         const calculateScrollAmount = () => {
             const firstItem = track.firstElementChild;
@@ -190,42 +185,6 @@ document.addEventListener('DOMContentLoaded', () => {
         nextBtn.addEventListener('click', () => {
             if (scrollAmount > 0) track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
         });
-
-        track.addEventListener('touchstart', (e) => {
-            const touch = e.touches[0];
-            if (!touch) return;
-
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
-            touchStartScrollLeft = track.scrollLeft;
-            touchDirection = null;
-        }, { passive: true });
-
-        track.addEventListener('touchmove', (e) => {
-            const touch = e.touches[0];
-            if (!touch) return;
-
-            const deltaX = touch.clientX - touchStartX;
-            const deltaY = touch.clientY - touchStartY;
-
-            if (!touchDirection) {
-                if (Math.abs(deltaX) < touchLockThreshold && Math.abs(deltaY) < touchLockThreshold) return;
-                touchDirection = Math.abs(deltaX) > Math.abs(deltaY) * 1.2 ? 'horizontal' : 'vertical';
-            }
-
-            if (touchDirection !== 'horizontal') return;
-
-            e.preventDefault();
-            track.scrollLeft = touchStartScrollLeft - deltaX;
-        }, { passive: false });
-
-        track.addEventListener('touchend', () => {
-            touchDirection = null;
-        }, { passive: true });
-
-        track.addEventListener('touchcancel', () => {
-            touchDirection = null;
-        }, { passive: true });
 
         let resizeFrame;
         window.addEventListener('resize', () => {
