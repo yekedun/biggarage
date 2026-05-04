@@ -178,13 +178,37 @@ document.addEventListener('DOMContentLoaded', () => {
         // Double rAF: first frame commits layout, second reads stable dimensions
         requestAnimationFrame(() => requestAnimationFrame(calculateScrollAmount));
 
+        const snapToNearest = () => {
+            const items = [...track.children];
+            if (!items.length) return;
+            const trackCenter = track.scrollLeft + track.clientWidth / 2;
+            let closest = items[0];
+            let closestDist = Infinity;
+            items.forEach(item => {
+                const dist = Math.abs((item.offsetLeft + item.offsetWidth / 2) - trackCenter);
+                if (dist < closestDist) { closestDist = dist; closest = item; }
+            });
+            const target = closest.offsetLeft - (track.clientWidth - closest.offsetWidth) / 2;
+            track.scrollTo({ left: target, behavior: 'smooth' });
+        };
+
         prevBtn.addEventListener('click', () => {
-            if (scrollAmount > 0) track.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            if (scrollAmount > 0) {
+                track.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            }
         });
 
         nextBtn.addEventListener('click', () => {
-            if (scrollAmount > 0) track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            if (scrollAmount > 0) {
+                track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            }
         });
+
+        let snapTimer;
+        track.addEventListener('touchend', () => {
+            clearTimeout(snapTimer);
+            snapTimer = setTimeout(snapToNearest, 80);
+        }, { passive: true });
 
         let resizeFrame;
         window.addEventListener('resize', () => {
